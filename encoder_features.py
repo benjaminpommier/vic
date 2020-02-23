@@ -6,7 +6,6 @@ Gérer les effets de bords dans le calcul des HSV
 
 # Importing useful package
 import cv2
-import matplotlib.pyplot as plt
 from skimage import feature
 import numpy as np
 
@@ -181,15 +180,13 @@ class ImageEncoder(BaseEstimator):
         return self.hog
 
         
-#%%
-#Set the different paths for the data 
-DATA_PATH = "data/FASSEG-frontal01/Train_RGB/"
+#%% TESTING
 
-#Image
-rgb_img = plt.imread(DATA_PATH + '5.bmp')
+# DATA_PATH = "data/FASSEG-frontal01/Train_RGB/"
+# rgb_img = plt.imread(DATA_PATH + '5.bmp')
 
-encoder = ImageEncoder(patch_size_hsv=16, patch_size_hog=16, nbins_hsv=16)
+# encoder = ImageEncoder(patch_size_hsv=16, patch_size_hog=16, nbins_hsv=16)
 
-timer = time()
-features = encoder.fit_transform(rgb_img)
-print(time() - timer)
+# timer = time()
+# features = encoder.fit_transform(rgb_img)
+# print(time() - timer)

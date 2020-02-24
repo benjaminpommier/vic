@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-TO BE IMPLEMENTED 
-Gérer les effets de bords dans le calcul des HSV
+@author: Benjamin Pommier
 """
 
 # Importing useful package

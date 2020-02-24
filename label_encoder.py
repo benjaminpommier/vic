@@ -5,19 +5,12 @@ Created on Sun Feb 23 20:22:46 2020
 @author: Benjamin Pommier
 """
 
-from encoder_features import ImageEncoder
+from features_encoder import ImageEncoder
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
 
 from sklearn.base import BaseEstimator
-
-ORIGINAL_PATH = 'data/FASSEG-frontal03/Original/'
-LABELED_PATH = 'data/FASSEG-frontal03/Labeled/'
-EXTENSION = 'jpg'
-
-orignal_data = glob.glob(ORIGINAL_PATH + '*.{}'.format(EXTENSION))
-labeled_data = glob.glob(LABELED_PATH + '*.{}'.format(EXTENSION))
 
 class LabelEncoder(BaseEstimator):
     
@@ -54,14 +47,17 @@ class LabelEncoder(BaseEstimator):
         
         return self.labels_mapped
 
-encoder = LabelEncoder()
 
-image = plt.imread(labeled_data[3])
-labels = encoder.fit_transform(image)
-cleaned_image = encoder.img
+#%% TESTING
+        
+# encoder = LabelEncoder()
 
-plt.subplot(121)
-plt.imshow(image)
-plt.subplot(122) 
-plt.imshow(cleaned_image)
-plt.show()
+# image = plt.imread(labeled_data[3])
+# labels = encoder.fit_transform(image)
+# cleaned_image = encoder.img
+
+# plt.subplot(121)
+# plt.imshow(image)
+# plt.subplot(122) 
+# plt.imshow(cleaned_image)
+# plt.show()

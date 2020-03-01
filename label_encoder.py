@@ -5,10 +5,14 @@ Created on Sun Feb 23 20:22:46 2020
 @author: Benjamin Pommier
 """
 
-from features_encoder import ImageEncoder
-import matplotlib.pyplot as plt
+import cv2
+from skimage import feature
 import numpy as np
+import re
+import matplotlib.pyplot as plt
+import pandas as pd
 import glob
+import time
 
 from sklearn.base import BaseEstimator
 
@@ -36,8 +40,8 @@ class LabelEncoder(BaseEstimator):
         values = list(self.dict_colors.values())
         keys = list(self.dict_colors.keys())
         
-        for j in range(N):
-            for i in range(M):
+        for i in range(M):
+            for j in range(N):
                 test = values - image[i][j]
                 idx = np.argmin([np.linalg.norm(x) for x in test])
                 self.img[i][j] = values[idx]
@@ -47,6 +51,28 @@ class LabelEncoder(BaseEstimator):
         
         return self.labels_mapped
 
+
+#Loading & encoding labels
+def encode_labels(labeled_data_path, encoder=None, num=None):
+    if encoder is None:
+        encoder = LabelEncoder()
+        
+    if num is None:
+        num = len(labeled_data_path)
+    
+    print('--- Encoding Labels ---')
+    encoding = []
+    timer = time.time()
+    for lbl in labeled_data_path[:num]:
+        idx = re.findall(r'\d+', lbl)[-1]
+        print('Image ' + idx + ' -- %.3f'%(time.time() - timer))
+        im = plt.imread(lbl)
+        result = pd.DataFrame(encoder.fit_transform(im))
+        result['image'] = int(idx)
+        encoding.append(result)
+        
+    encoding = pd.concat(encoding, axis=0).rename(columns={0: 'label'})
+    return encoding
 
 #%% TESTING
         

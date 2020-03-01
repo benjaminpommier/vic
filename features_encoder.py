@@ -7,8 +7,11 @@
 import cv2
 from skimage import feature
 import numpy as np
-
-from time import time
+import re
+import matplotlib.pyplot as plt
+import pandas as pd
+import glob
+import time
 
 from sklearn.base import BaseEstimator
 
@@ -78,8 +81,8 @@ class ImageEncoder(BaseEstimator):
         patch_list = []
         self.hsv = None
         
-        for j in range(N):
-            for i in range(M):
+        for i in range(M):
+            for j in range(N):
                 patch_hsv = self._compute_local_hsv(X_hsv[i : i + window_hsv,
                                                                j : j + window_hsv,:],
                                                              nbins_hsv=self.nbins_hsv)
@@ -167,8 +170,8 @@ class ImageEncoder(BaseEstimator):
         hog_features = []
         
         #Iterations over the windows to compute local hog features
-        for j in range(N):
-            for i in range(M):
+        for i in range(M):
+            for j in range(N):
                 patch_hog = X_hog[i : i + window_hog,
                                   j : j + window_hog, :]
                 hog_features.append(feature.hog(patch_hog, orientations=9, pixels_per_cell=(8,8),
@@ -178,7 +181,39 @@ class ImageEncoder(BaseEstimator):
         self.hog = np.concatenate(tuple(hog_features), axis=0)
         return self.hog
 
+# Feature encoding
+def compute_features(orignal_data_path, encoder=None, num=None, batch=20):
+    if encoder is None:
+        encoder = ImageEncoder()
+    
+    if num is None:
+        num = len(orignal_data_path)
+    
+    print('--- Computing features ---')
+    encoding = []
+    timer = time.time()
+    for lbl in orignal_data_path[:num]:
+        idx = re.findall(r'\d+', lbl)[-1]
+        print('Image ' + idx + ' -- %.3f'%(time.time() - timer))
+        im = plt.imread(lbl)
+        result = pd.DataFrame(encoder.fit_transform(im))
+        result['image'] = int(idx)
+        encoding.append(result)
         
+        if (int(idx) % batch) == 0:
+            encoding = pd.concat(encoding, axis=0)
+            save(encoding, 'features_' + idx)
+            encoding = []
+    
+    encoding = pd.concat(encoding, axis=0)
+    save(encoding, 'features_' + str(int(idx)+1))
+    
+    return encoding
+
+def save(df, name):
+    df.to_csv(open(name + '.csv', 'x'), index=False)
+
+
 #%% TESTING
 
 # DATA_PATH = "data/FASSEG-frontal01/Train_RGB/"

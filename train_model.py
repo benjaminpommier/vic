@@ -7,52 +7,53 @@ Created on Tue Feb 25 08:44:29 2020
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import classification_report
 import glob
 import pandas as pd
 import pickle
 
-#Data
+# #Data
 exception = 13
-X_train = pd.read_csv('features_train.csv')
+X_train = pd.read_csv('features/features_train.csv')
 max_im = X_train.image.max()
 X_train = X_train[(X_train.image <= max_im) & (X_train.image != exception)]
 
-X_dev = pd.read_csv('features_dev.csv')
+X_dev = pd.read_csv('features/features_dev.csv')
 
-labels = pd.read_csv('labels.csv')
+labels = pd.read_csv('features/labels.csv')
 y_train = labels[(labels.image <= max_im) & (labels.image != exception)].label
 
 y_dev = labels[(labels.image > max_im) & (labels.image < 31)].label
 
-#%% TRAIN MODEL
-
 #Model RF
-model = RandomForestClassifier()
+model = GradientBoostingClassifier()
 params = {'n_estimators': [10], 'min_samples_leaf': [100]}
 # params = {'n_estimators': [10, 30, 50], 'min_samples_leaf': [1, 10, 100, 1000]}
-gridsearch = GridSearchCV(model, param_grid=params, cv=3, verbose=2, n_jobs=-1)
+gridsearch = GridSearchCV(model, param_grid=params, cv=3, verbose=3, n_jobs=-1)
 
 #Fitting
 gridsearch.fit(X_train, y_train)
 best_model = gridsearch.best_estimator_
+# best_model.n_jobs = -1 #Setting te parameter afterwards otherwise None
 best_model.fit(X_train, y_train)
 
 #Save the model to disk
-filename_model = 'random_forest.sav'
+filename_model = 'gradient_boosting.sav'
 pickle.dump(best_model, open(filename_model, 'wb'))
 
 #%%
 #Prediction
+
+best_model_load = pickle.load(open('model/random_forest.sav', 'rb'))
 #Training set
-y_pred_train = best_model.predict(X_train)
-y_probas_train = best_model.predict_proba(X_train)
+y_pred_train = best_model_load.predict(X_train)
+y_probas_train = best_model_load.predict_proba(X_train)
 print(classification_report(y_train, y_pred_train))
 
 #Test set
-y_pred_dev= best_model.predict(X_dev)
-y_probas_dev= best_model.predict_proba(X_dev)
+y_pred_dev= best_model_load.predict(X_dev)
+y_probas_dev= best_model_load.predict_proba(X_dev)
 print(classification_report(y_dev, y_pred_dev))
 
 #%%

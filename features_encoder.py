@@ -33,7 +33,7 @@ class ImageEncoder(BaseEstimator):
         # Attribute use in the computation of HSV features
         self.patch_hsv = None
         
-        # Size of patches for computation of features*
+        # Size of patches for computation of features
         self.nbins_hsv = nbins_hsv
         self.patch_size_hsv = patch_size_hsv
         self.patch_size_hog = patch_size_hog

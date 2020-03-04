@@ -1,6 +1,7 @@
 import skimage.segmentation as seg
 import skimage.filters as fil
 import scipy.ndimage.filters as filt
+from scipy import signal
 import cv2
 import numpy as np
 import pandas as pd
@@ -149,7 +150,7 @@ def Yen(image):
     return binary
 
 
-### EDGES FEATURES
+### EDGE DETECTION FEATURES
 
 def CannyEdge(image):
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -216,6 +217,17 @@ def SobelV(image):
     return fil.sobel_v(image)
 
 
+### OTHER FEATURES
+
+def GradientMagnitude(image):
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    Sx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    Sy = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    gx = signal.convolve2d(image,Sx,'same')
+    gy = signal.convolve2d(image,Sy,'same')
+    return np.sqrt(gx**2 + gy**2)
+
+
 ### FEATURE EXTRACTION
 
 def feature_extraction(images,feature_functions):
@@ -245,4 +257,18 @@ def feature_extraction(images,feature_functions):
             
             cumulated_dim = cumulated_dim + local_dim
             
+    return X
+
+
+### HOG & HSV FEATURES
+
+def HOG_HSV(path,names,X):
+    
+    names_hog = [x[1:3] + '.csv' for x in names]
+    hog_features = [pd.read_csv(path + x, header=0, names = ['HOG_HSV'+str(i) for i in range(6)]) 
+                     for x in names_hog]
+    
+    df_hog = pd.concat(hog_features, axis=0).reset_index(drop=True)
+    X = pd.concat([X,df_hog], axis=1)
+    
     return X

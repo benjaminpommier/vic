@@ -4,7 +4,7 @@ This repository contains the code and resources we used for this project.
 
 The pipeline is executed by the following notebooks (in this order) :
 
-1) Face detection (Face detection.ipynb)
+1) Face detection (Face_Detection.ipynb)
 2) Face segmentation (Face_Segmentation.ipynb)
 3) Gender detection (notebook)
 4) Head pose estimation (notebook)

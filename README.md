@@ -9,4 +9,4 @@ The pipeline is executed by the following notebooks (in this order) :
 3) Gender detection (notebook)
 4) Head pose estimation (notebook)
 
-All .py files contain functions that are called in these notebook.
+All .py files contain functions that are called in these notebooks.

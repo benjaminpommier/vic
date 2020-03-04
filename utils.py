@@ -15,8 +15,9 @@ def import_dataset(path_images,sub_dir_original,sub_dir_labeled,dataset_size):
     
     # Importing dataset
     
-    names = sorted([img for img in listdir(path_images+sub_dir_original) if isfile(join(path_images+sub_dir_original, img))], reverse=True)
-    names = names[1:dataset_size+1]
+    names = sorted([img for img in listdir(path_images+sub_dir_original) if isfile(join(path_images+sub_dir_original, img))])
+    start_img = 30
+    names = names[start_img:dataset_size+start_img]
 
     images = [plt.imread(path_images+sub_dir_original+name) for name in names]
     raw_labels = [plt.imread(path_images+sub_dir_labeled+name) for name in names]
@@ -36,6 +37,12 @@ def import_dataset(path_images,sub_dir_original,sub_dir_labeled,dataset_size):
     
     return images, raw_labels, names
 
+def import_dataset_perso(path_images_perso):
+    
+    names = sorted([img for img in listdir(path_images_perso) if isfile(join(path_images_perso,img))])[:-1]
+    images = [plt.imread(path_images_perso+name) for name in names]
+    
+    return images, names
 
 
 ### PLOT FUNCTIONS
@@ -43,23 +50,27 @@ def import_dataset(path_images,sub_dir_original,sub_dir_labeled,dataset_size):
 def plot_dataset(images,labels,names):
     
     N_lines = len(images) // 3 + 1
-    plt.figure(figsize=(18, 5*N_lines))
+    LastLine = len(images) % 3
     
     for i in range(N_lines):
         
+        if i != N_lines-1:
+            plt.figure(figsize=(18,5))
+        else:
+            plt.figure(figsize=(6*LastLine,5))
         counter_position = 1
         counter_image = 0
         
         while (counter_image < 3) & ((3*i + counter_image) < len(images)):
             
-            plt.subplot(N_lines, 6, 6*i + counter_position)
+            plt.subplot(1, 6, counter_position)
             plt.imshow(images[3*i + counter_image])
             plt.title('Image ' + names[3*i + counter_image], fontsize=15)
             plt.axis('off')
             
             counter_position += 1
             
-            plt.subplot(N_lines, 6, 6*i + counter_position)
+            plt.subplot(1,6, counter_position)
             plt.imshow(labels[3*i + counter_image])
             plt.title('Labels ' + names[3*i + counter_image], fontsize=15)
             plt.axis('off')
@@ -67,22 +78,43 @@ def plot_dataset(images,labels,names):
             counter_position += 1
             counter_image += 1
             
+        plt.tight_layout()
+        plt.show()
+
+    
+def plot_dataset_perso(images,names):
+   
+    plt.figure(figsize=(18,5))
+        
+    for i in range(len(images)):
+            
+        plt.subplot(1, len(images), i+1)
+        plt.imshow(images[i])
+        plt.title('Image ' + names[i], fontsize=15)
+        plt.axis('off')
+            
     plt.tight_layout()
     plt.show()
 
 
-def plot_features(images, index_viz, feature_functions, N_cols):
+def plot_features(X, images, index_viz, feature_functions, N_cols):
 
     img = images[index_viz]
     N_total = len(feature_functions)
-    N_lines = N_total // N_cols + 1
+    N_lines = (N_total+6) // N_cols + 1
     
     plt.figure(figsize=(2*N_cols, 2.5*N_lines))
     
     for i in range(N_total):
         plt.subplot(N_lines,N_cols,i+1)
         plt.imshow(feature_functions[i](img))
-        plt.title(feature_functions[i].__name__, fontsize=15)
+        plt.title(feature_functions[i].__name__, fontsize=12)
+        plt.axis('off')
+        
+    for i in range(6):
+        plt.subplot(N_lines,N_cols,N_total+i+1)
+        plt.imshow(X.loc[X['ImageId'] == index_viz,'HOG_HSV'+str(i)].values.reshape(img[:,:,0].shape))
+        plt.title('RF_HOG_HSV' + str(i), fontsize=12)
         plt.axis('off')
         
     plt.tight_layout()
@@ -111,6 +143,28 @@ def plot4(img1,img2,img3,img4,title1,title2,title3,title4):
     plt.subplot(1,4,4)
     plt.imshow(img4)
     plt.title(title4)
+    plt.axis('off')
+    
+    plt.show()
+    
+
+def plot3(img1,img2,img3,title1,title2,title3):
+    
+    plt.figure(figsize=(10,5))
+    
+    plt.subplot(1,3,1)
+    plt.imshow(img1)
+    plt.title(title1)
+    plt.axis('off')
+    
+    plt.subplot(1,3,2)
+    plt.imshow(img2)
+    plt.title(title2)
+    plt.axis('off')
+    
+    plt.subplot(1,3,3)
+    plt.imshow(img3)
+    plt.title(title3)
     plt.axis('off')
     
     plt.show()
@@ -150,8 +204,21 @@ def plot_predictions(images, X_train, X_test, y_train, y_test, y_train_label, y_
         pred_image = np.array(img['pred_color']).reshape((images[0].shape[0],-1))
         smoothed_image = smooth_image(pred_image)
         plot4(original_image,true_image,pred_image,smoothed_image,'Original image','True labels','Predicted labels','Smoothed labels')
+
+
+def plot_predictions_perso(images_perso, X_perso, y_pred_label_perso):
     
-   
+    X_perso['pred_label'] = y_pred_label_perso
+    X_perso['pred_color'] = X_perso['pred_label'].map(get_color)
+
+    for imageid in X_perso['ImageId'].unique():
+        img = X_perso[X_perso['ImageId']==imageid]
+        original_image = images_perso[int(imageid)]
+        pred_image = np.array(img['pred_color']).reshape((images_perso[0].shape[0],-1))
+        smoothed_image = smooth_image(pred_image)
+        plot3(original_image,pred_image,smoothed_image,'Original image','Predicted labels','Smoothed labels')
+        
+
 
 ### LABELING FUNCTIONS
     
@@ -173,13 +240,15 @@ def label_image(img):
                 img_label[i,j] = 0.8 # nose
             elif (img[i,j,0] >= 110) & (img[i,j,0] <= 150) & (img[i,j,1] >= 0) & (img[i,j,1] <= 40) & (img[i,j,2] >= 0) & (img[i,j,2] <= 40):
                 img_label[i,j] = 0.9 # hairs
-                
+
+    img_label = smooth_image(img_label)           
+    
     return img_label
 
 
 def extract_label(raw_labels):
     
-    print('Extracting labels :')
+    print('Extracting labels:')
     print('')
     
     labels = []
@@ -247,6 +316,76 @@ def target_definition(X,images,labels):
     
     return X
 
+
+### ADDING NEIGHBORS FEATURES
+
+def add_neighbors(X):
+    
+    print('Adding neighbors features:' )
+    print('')
+    
+    X_up_columns = {col : col + '_up' for col in X.columns}
+    X_up_left_columns = {col : col + '_up_left' for col in X.columns}
+    X_up_right_columns = {col : col + '_up_right' for col in X.columns}
+    X_down_columns = {col : col + '_down' for col in X.columns}
+    X_down_left_columns = {col : col + '_down_left' for col in X.columns}
+    X_down_right_columns = {col : col + '_down_right' for col in X.columns}
+    X_left_columns = {col : col + '_left' for col in X.columns}
+    X_right_columns = {col : col + '_right' for col in X.columns}
+    
+    X_up_list = []
+    X_up_left_list = []
+    X_up_right_list = []
+    X_down_list = []
+    X_down_left_list = []
+    X_down_right_list = []
+    X_left_list = []
+    X_right_list = []
+    
+    counter = 1
+    total_count = len(X['ImageId'].unique())
+    
+    for imageid in X['ImageId'].unique():
+        
+        print('{} / {}'.format(counter,total_count))
+        
+        subset = X[X['ImageId'] == imageid].copy()
+        dim = int(subset.shape[0] / 512)
+        
+        X_up_list.append(subset.rename(columns=X_up_columns).shift(periods=-dim).fillna(0).drop('ImageId_up',axis=1))
+        X_up_left_list.append(subset.rename(columns=X_up_left_columns).shift(periods=-dim-1).fillna(0).drop('ImageId_up_left',axis=1))
+        X_up_right_list.append(subset.rename(columns=X_up_right_columns).shift(periods=-dim+1).fillna(0).drop('ImageId_up_right',axis=1))
+        X_down_list.append(subset.rename(columns=X_down_columns).shift(periods=dim).fillna(0).drop('ImageId_down',axis=1))
+        X_down_left_list.append(subset.rename(columns=X_down_left_columns).shift(periods=dim-1).fillna(0).drop('ImageId_down_left',axis=1))
+        X_down_right_list.append(subset.rename(columns=X_down_right_columns).shift(periods=dim+1).fillna(0).drop('ImageId_down_right',axis=1))
+        X_left_list.append(subset.rename(columns=X_left_columns).shift(periods=-1).fillna(0).drop('ImageId_left',axis=1))
+        X_right_list.append(subset.rename(columns=X_right_columns).shift(periods=1).fillna(0).drop('ImageId_right',axis=1))
+        
+        counter += 1
+
+    print('Concatenation...')
+    X_up = pd.concat(X_up_list, axis=0).reset_index(drop=True)
+    X_up_left = pd.concat(X_up_left_list, axis=0).reset_index(drop=True)
+    X_up_right = pd.concat(X_up_right_list, axis=0).reset_index(drop=True)
+    X_down = pd.concat(X_down_list, axis=0).reset_index(drop=True)
+    X_down_left = pd.concat(X_down_left_list, axis=0).reset_index(drop=True)
+    X_down_right = pd.concat(X_down_right_list, axis=0).reset_index(drop=True)
+    X_left = pd.concat(X_left_list, axis=0).reset_index(drop=True)
+    X_right = pd.concat(X_right_list, axis=0).reset_index(drop=True)
+    
+    print('Merge...')
+    X = X.merge(X_up, how='left', left_index=True, right_index=True)
+    X = X.merge(X_up_left, how='left', left_index=True, right_index=True)
+    X = X.merge(X_up_right, how='left', left_index=True, right_index=True)
+    X = X.merge(X_down, how='left', left_index=True, right_index=True)
+    X = X.merge(X_down_left, how='left', left_index=True, right_index=True)
+    X = X.merge(X_down_right, how='left', left_index=True, right_index=True)
+    X = X.merge(X_left, how='left', left_index=True, right_index=True)
+    X = X.merge(X_right, how='left', left_index=True, right_index=True)
+    
+    print('Done')
+    
+    return X
 
 
 ### TRAINING FUNCTIONS
@@ -334,10 +473,11 @@ def plot_feature_importance(model, features, max_features):
     
     if max_features == None:
         top = feature_importances.iloc[0:]
+        top.plot(kind='barh',figsize = (12,10))
     else:
         top = feature_importances.iloc[0:max_features]
-        
-    top.plot(kind='barh',figsize = (12,10))
+        top.plot(kind='barh',figsize = (12,int(0.5*max_features)))
+
     plt.legend().remove()
     plt.xticks([])
     plt.title('Feature importance')

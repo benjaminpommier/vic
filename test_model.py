@@ -32,7 +32,7 @@ def main(args):
     None.
 
     """
-    PATH = args.path
+    PATH = args.path_or
     path_list = sorted(glob.glob(PATH))
     
     #Loading model
@@ -43,12 +43,13 @@ def main(args):
         idx = X.image.max()
         print('------- ' + str(idx) + ' -------')
         pred = pd.DataFrame(model.predict_proba(X))
-        filename = 'probability_maps_perso/%.d.csv'%(idx)   
+        filename = args.path_dest+'%.d.csv'%(idx)   
         pred.to_csv(open(filename, 'w'), index=False)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path",  type=str)
+    parser.add_argument("--path_or",  type=str)
+    parser.add_argument('--path_dest', type=str)
     parser.add_argument("--model", type=str, default='random_forest')
     args = parser.parse_args()
     main(args)

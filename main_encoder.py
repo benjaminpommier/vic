@@ -13,19 +13,20 @@ import glob
 import time
 
 #%%
-# Paths
-ORIGINAL_PATH = 'perso/'
-# LABELED_PATH = 'data/FASSEG-frontal03/Labeled/'
+# Define the paths
+ORIGINAL_PATH = 'data/FASSEG-frontal03/Original'
+LABELED_PATH = 'data/FASSEG-frontal03/Labeled/'
 EXTENSION = 'jpg'
 
+# Extract all the image paths
 original_data = sorted(glob.glob(ORIGINAL_PATH + '*.{}'.format(EXTENSION)))
-# labeled_data = glob.glob(LABELED_PATH + '*.{}'.format(EXTENSION))
-print(original_data)
+labeled_data = glob.glob(LABELED_PATH + '*.{}'.format(EXTENSION))
 
-# label_encoder = LabelEncoder()
+# Encode labels & images with the predefined Encoders
+label_encoder = LabelEncoder()
 image_encoder = ImageEncoder(patch_size_hsv=16, patch_size_hog=16, nbins_hsv=16)
 
-# labels = encode_labels(labeled_data)
-# save(labels, 'labels')
+labels = encode_labels(labeled_data)
+save(labels, 'labels')
 
 features = compute_features(original_data, encoder=image_encoder, batch=1)

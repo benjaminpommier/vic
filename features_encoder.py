@@ -122,7 +122,7 @@ class ImageEncoder(BaseEstimator):
             
 
     def _compute_local_hsv(self, X, nbins_hsv=None):
-        """Compute hsv feature for a given input.
+        """Compute hsv histogram for a given input.
         Allows to separate the analysis into patches.
         Parameters:
             X: HSV images of the original input
@@ -182,7 +182,27 @@ class ImageEncoder(BaseEstimator):
         return self.hog
 
 # Feature encoding
-def compute_features(orignal_data_path, encoder=None, num=None, batch=20):
+def compute_features(orignal_data_path, encoder=None, num=None, batch=1):
+    '''
+    Main function to be called when computing the feature for a given image.
+
+    Parameters
+    ----------
+    orignal_data_path : List
+        Path of the images to encode.
+    encoder : ImageEncoder, optional
+        Use to encode iamges. If not provided, initialize a default encoder. The default is None.
+    num : int, optional
+        Number of data to encode. If not provided all the images will be processed.  The default is None.
+    batch : int, optional
+        Size of the batch to save the images. The default is 20.
+
+    Returns
+    -------
+    encoding : TYPE
+        DESCRIPTION.
+
+    '''
     if encoder is None:
         encoder = ImageEncoder()
     

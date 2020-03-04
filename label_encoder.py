@@ -17,6 +17,12 @@ import time
 from sklearn.base import BaseEstimator
 
 class LabelEncoder(BaseEstimator):
+    '''Create a class to clean the Label.
+    Parameters
+    ----------
+    img : array
+        Input image.
+    '''
     
     def __init__(self, img=None):
         self.img = img
@@ -27,12 +33,28 @@ class LabelEncoder(BaseEstimator):
         self.labels_mapped = None
         
     def fit(self, img):
+        '''Implemented to be used in sklearn pipeline'''
         return img
     
     def transform(self, img):
+        '''Refers to fit_transform'''
         return self.fit_transform(img)
     
     def fit_transform(self, image):
+        '''
+        Compute the transformation of the label to have only 6 categories.
+
+        Parameters
+        ----------
+        image : array
+            Input label.
+
+        Returns
+        -------
+        labels_maped : array
+            Cleaned image with only 6 type of colors.
+
+        '''
         M = image.shape[0]
         N = image.shape[1]
         self.img = np.copy(image)
@@ -54,6 +76,24 @@ class LabelEncoder(BaseEstimator):
 
 #Loading & encoding labels
 def encode_labels(labeled_data_path, encoder=None, num=None):
+    '''
+    Function to call when cleaning the labels.
+
+    Parameters
+    ----------
+    labeled_data_path : list
+        List of path for all the labeled images.
+    encoder : LabelEncoder, optional
+        Encoder for the label. If None initialized to default. The default is None.
+    num : int, optional
+        Number of iamge to encode. If None, all is encoded. The default is None.
+
+    Returns
+    -------
+    encoding : array
+        Return the array of the labeled image.
+
+    '''
     if encoder is None:
         encoder = LabelEncoder()
         

@@ -10,8 +10,8 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 
-classif_train = pickle.load(open('model/results/all_random_forest_results_train.pkl', 'rb'))
-classif_test = pickle.load(open('model/results/all_random_forest_results_dev.pkl', 'rb'))
+classif_train = pickle.load(open('model/results/all_logreg_results_train.pkl', 'rb'))
+classif_test = pickle.load(open('model/results/all_logreg_results_dev.pkl', 'rb'))
 df_train = pd.DataFrame(classif_train)
 df_test = pd.DataFrame(classif_test)
 

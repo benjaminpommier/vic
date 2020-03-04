@@ -119,7 +119,7 @@ def evaluate(X_train, X_dev, y_train, y_dev, type_model='rf'):
     
     return y_probas_train, y_probas_dev
 
-#%% Data Loading
+#%%Training
 partial = ['all']
 for prt in partial:
     X_train, X_dev, y_train, y_dev = load_data(partial=prt)
@@ -204,6 +204,6 @@ def visualize(labels=None, features=None, model=None, image_num=None, predict=Tr
 # file = pd.read_csv('probability_maps_perso/' + str(im_num) + '.csv').to_numpy()
 # visualize(labels = file, image_num=im_num, predict=False)
         
-im_num = 9
-mdl = pickle.load(open('model/random_forest.sav', 'rb')) 
-visualize(features=X_train, model=mdl, image_num=im_num, predict=True)
+# im_num = 9
+# mdl = pickle.load(open('model/all_random_forest.sav', 'rb')) 
+# visualize(features=X_train, model=mdl, image_num=im_num, predict=True)
